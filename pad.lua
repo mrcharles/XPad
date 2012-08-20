@@ -17,30 +17,12 @@ function pad:new(index, mapping, aliases)
 		p:setAliases(aliases)
 	end
 
+	self.input = pad.input or love.joystick
+
 	return p
 end
 
-function pad:setAliases(aliases)
-	self.aliases = aliases
-end
-
-
-function pad:getAxis(name)
-	assert(self.input)
-	local id = self:getAxisID( self:getButtonName(name) )
-
-	if id == nil then
-		return 0
-	end
-	
-	return self.input.getAxis(self.index, id)
-end
-
-function pad:getAxisID(name)
-	return self.mappings.axisids[ self:getButtonName(name) ]
-end
-
-function pad:getButtonName(id)
+local function padGetButtonName(self, id)
 	if type(id) == "number" then
 		return self.mappings.buttonnames[id]
 	else
@@ -51,12 +33,32 @@ function pad:getButtonName(id)
 	end
 end
 
-function pad:getButtonID(name)
-	return self.mappings.buttonids[ self:getButtonName(name) ]
+local function padGetAxisID(self, name)
+	return self.mappings.axisids[ padGetButtonName(self, name) ]
 end
 
+local function padGetButtonID(self, name)
+	return self.mappings.buttonids[ padGetButtonName(self, name) ]
+end
+
+function pad:setAliases(aliases)
+	self.aliases = aliases
+end
+
+function pad:getAxis(name)
+	assert(self.input)
+	local id = padGetAxisID( self, padGetButtonName(self, name) )
+
+	if id == nil then
+		return 0
+	end
+	
+	return self.input.getAxis(self.index, id)
+end
+
+
 function pad:pressed(name)
-	local id = self:getButtonID(name)
+	local id = padGetButtonID(self,name)
 
 	if id == nil then
 		return false
@@ -66,7 +68,7 @@ function pad:pressed(name)
 end
 
 function pad:justPressed(name)
-	local id = self:getButtonID(name)
+	local id = padGetButtonID(self,name)
 
 	if id == nil then
 		return false
@@ -76,7 +78,7 @@ function pad:justPressed(name)
 end
 
 function pad:justReleased(name)
-	local id = self:getButtonID(name)
+	local id = padGetButtonID(self,name)
 
 	if id == nil then
 		return false
